@@ -55,7 +55,7 @@ class Cache:
 
         return self.get(key, fn=int)
 
-    def count_calls(method: Callable) -> Callable:
+    def count_calls(self, method: Callable) -> Callable:
         """ Above Cache define a count_calls decorator that takes a single method
             Callable argument and returns a Callable.
         """
