@@ -5,6 +5,8 @@
 import redis
 import uuid
 from typing import Union, Callable
+from functools import wraps
+
 
 
 class Cache:
@@ -52,3 +54,15 @@ class Cache:
         """ This method returns a decoded key integer format. """
 
         return self.get(key, fn=int)
+
+    def count_calls(method: Callable) -> Callable:
+        """ Above Cache define a count_calls decorator that takes a single method
+            Callable argument and returns a Callable.
+        """
+
+        @wraps(method)
+        def wrapper(self, *args, **kwargs):
+            key = method.__qualname__
+            self._redis.incr(key)
+            return method(self, *args, **kwargs)
+        return wrapper
