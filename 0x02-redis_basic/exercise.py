@@ -55,7 +55,7 @@ class Cache:
 
         return self.get(key, fn=int)
 
-    def count_calls(self, method: Callable) -> Callable:
+    def count_calls(method: Callable) -> Callable:
         """ Above Cache define a count_calls decorator that takes a single method
             Callable argument and returns a Callable.
         """
@@ -65,4 +65,22 @@ class Cache:
             key = method.__qualname__
             self._redis.incr(key)
             return method(self, *args, **kwargs)
+        return wrapper
+    
+    def call_history(method: Callable) -> Callable:
+        """ this task, we will define a call_history decorator to store the history of
+            inputs and outputs for a particular function.
+        """
+    
+        @wraps(method)
+        def wrapper(self, *args, **kwargs):
+            input_key = f"{method.__qualname__}:inputs"
+            output_key = f"{method.__qualname__}:outputs"
+            
+            self._redis.rpush(input_key, str(args))
+            
+            output = method(self, *args, **kwargs)
+            self._redis.rpush(output_key, str(output))
+            
+            return output
         return wrapper
