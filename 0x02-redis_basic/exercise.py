@@ -84,3 +84,25 @@ class Cache:
             
             return output
         return wrapper
+    
+    def replay(fn):
+        """
+        Display the history of calls of a particular function.
+        """
+        # Get the qualified name of the function
+        fn_name = fn.__qualname__
+        
+        # Get the keys for input and output history
+        input_key = f"{fn_name}:inputs"
+        output_key = f"{fn_name}:outputs"
+        
+        # Retrieve the list of inputs and outputs from Redis
+        inputs = cache._redis.lrange(input_key, 0, -1)
+        outputs = cache._redis.lrange(output_key, 0, -1)
+        
+        # Print the history of calls
+        print(f"{fn_name} was called {len(inputs)} times:")
+        for i, (input_data, output_data) in enumerate(zip(inputs, outputs)):
+            input_args = eval(input_data)  # Convert the string back to args tuple
+            output_key = output_data.decode("utf-8")  # Decode the byte string
+            print(f"{fn_name}(*{input_args}) -> {output_key}")
